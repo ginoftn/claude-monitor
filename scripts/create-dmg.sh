@@ -22,6 +22,7 @@ mkdir -p "$STAGING"
 
 # Stage only app + Applications symlink
 cp -R "${BUILD_DIR}/${APP_NAME}.app" "$STAGING/"
+
 ln -s /Applications "$STAGING/Applications"
 
 # Create read-write DMG (larger to have room for background)

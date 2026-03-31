@@ -16,6 +16,7 @@
 		A10007 /* MonitorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10007 /* MonitorView.swift */; };
 		A10008 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10008 /* SettingsView.swift */; };
 		A10009 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10009 /* Assets.xcassets */; };
+		A10010 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = B10012 /* AppIcon.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		B10009 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B10010 /* ClaudeMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClaudeMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10011 /* ClaudeMonitor.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClaudeMonitor.entitlements; sourceTree = "<group>"; };
+		B10012 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +62,7 @@
 				D10005 /* Views */,
 				B10009 /* Assets.xcassets */,
 				B10011 /* ClaudeMonitor.entitlements */,
+				B10012 /* AppIcon.icns */,
 			);
 			path = ClaudeMonitor;
 			sourceTree = "<group>";
@@ -159,6 +162,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10009 /* Assets.xcassets in Resources */,
+				A10010 /* AppIcon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -294,7 +298,7 @@
 		F10006 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = ClaudeMonitor/ClaudeMonitor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -319,7 +323,7 @@
 		F10007 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				CODE_SIGN_ENTITLEMENTS = ClaudeMonitor/ClaudeMonitor.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
