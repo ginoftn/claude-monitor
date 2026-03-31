@@ -30,18 +30,9 @@ export: archive
 		-exportPath $(BUILD_DIR) \
 		-exportOptionsPlist ExportOptions.plist
 
-# --- Create DMG with Applications shortcut ---
+# --- Create styled DMG with background + icon layout ---
 dmg: export
-	rm -rf $(BUILD_DIR)/dmg-staging
-	mkdir -p $(BUILD_DIR)/dmg-staging
-	cp -R $(BUILD_DIR)/$(APP_NAME).app $(BUILD_DIR)/dmg-staging/
-	ln -s /Applications $(BUILD_DIR)/dmg-staging/Applications
-	hdiutil create -volname $(APP_NAME) \
-		-srcfolder $(BUILD_DIR)/dmg-staging \
-		-ov -format UDZO \
-		$(BUILD_DIR)/$(DMG_NAME)
-	rm -rf $(BUILD_DIR)/dmg-staging
-	@echo "DMG created: $(BUILD_DIR)/$(DMG_NAME)"
+	./scripts/create-dmg.sh
 
 # --- Notarize + staple ---
 notarize: dmg
