@@ -92,7 +92,7 @@ struct MonitorView: View {
 
             // Footer
             HStack {
-                Text("↻ \(Int(max(UserDefaults.standard.double(forKey: "scanInterval"), 10).rounded()))s")
+                Text("↻ \(Int(max(UserDefaults.standard.double(forKey: "scanInterval"), 25).rounded()))s")
                     .font(.system(.caption2, design: .monospaced))
                     .foregroundStyle(.quaternary)
                 Spacer()

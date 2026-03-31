@@ -1,112 +1,89 @@
 #!/bin/bash
-# Create a styled DMG for ClaudeMonitor
+# Create a styled DMG for ClaudeMonitor using create-dmg
 set -e
 
 APP_NAME="ClaudeMonitor"
 BUILD_DIR="build"
-DMG_TEMP="${BUILD_DIR}/${APP_NAME}-temp.dmg"
 DMG_FINAL="${BUILD_DIR}/${APP_NAME}.dmg"
-STAGING="${BUILD_DIR}/dmg-staging"
-VOL_NAME="$APP_NAME"
-WINDOW_W=540
-WINDOW_H=340
-ICON_SIZE=128
-APP_X=140
-APP_Y=150
-APPS_X=400
-APPS_Y=150
+ICON_SRC="icons/app-icon-1024.png"
 
-# Clean
-rm -rf "$STAGING" "$DMG_TEMP" "$DMG_FINAL"
-mkdir -p "$STAGING"
+# Clean previous DMG
+rm -f "$DMG_FINAL"
 
-# Stage only app + Applications symlink
-cp -R "${BUILD_DIR}/${APP_NAME}.app" "$STAGING/"
+# Generate volume icon (.icns) from app icon
+ICONSET="/tmp/dmg-vol.iconset"
+rm -rf "$ICONSET"
+mkdir -p "$ICONSET"
+sips -z 16 16 "$ICON_SRC" --out "$ICONSET/icon_16x16.png" > /dev/null
+sips -z 32 32 "$ICON_SRC" --out "$ICONSET/icon_16x16@2x.png" > /dev/null
+sips -z 32 32 "$ICON_SRC" --out "$ICONSET/icon_32x32.png" > /dev/null
+sips -z 64 64 "$ICON_SRC" --out "$ICONSET/icon_32x32@2x.png" > /dev/null
+sips -z 128 128 "$ICON_SRC" --out "$ICONSET/icon_128x128.png" > /dev/null
+sips -z 256 256 "$ICON_SRC" --out "$ICONSET/icon_128x128@2x.png" > /dev/null
+sips -z 256 256 "$ICON_SRC" --out "$ICONSET/icon_256x256.png" > /dev/null
+sips -z 512 512 "$ICON_SRC" --out "$ICONSET/icon_256x256@2x.png" > /dev/null
+sips -z 512 512 "$ICON_SRC" --out "$ICONSET/icon_512x512.png" > /dev/null
+cp "$ICON_SRC" "$ICONSET/icon_512x512@2x.png"
+iconutil -c icns "$ICONSET" -o /tmp/dmg-vol.icns
 
-ln -s /Applications "$STAGING/Applications"
-
-# Create read-write DMG (larger to have room for background)
-hdiutil create "$DMG_TEMP" \
-    -volname "$VOL_NAME" \
-    -srcfolder "$STAGING" \
-    -format UDRW \
-    -fs HFS+ \
-    -size 30m
-
-# Mount
-MOUNT_DIR=$(hdiutil attach "$DMG_TEMP" -readwrite -noverify | grep "Apple_HFS" | sed 's/.*\(\/Volumes\/.*\)/\1/' | sed 's/[[:space:]]*$//')
-echo "Mounted at: $MOUNT_DIR"
-
-# Create and hide background
-mkdir -p "$MOUNT_DIR/.background"
-
-# Generate background PNG
+# Generate background image (dark gradient + arrow)
 python3 -c "
-svg = '''<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${WINDOW_W}\" height=\"${WINDOW_H}\" viewBox=\"0 0 ${WINDOW_W} ${WINDOW_H}\">
-  <defs>
-    <linearGradient id=\"bg\" x1=\"0\" y1=\"0\" x2=\"0.3\" y2=\"1\">
-      <stop offset=\"0%\" stop-color=\"#1a1a2e\"/>
-      <stop offset=\"100%\" stop-color=\"#0f0f1a\"/>
-    </linearGradient>
-  </defs>
-  <rect width=\"${WINDOW_W}\" height=\"${WINDOW_H}\" fill=\"url(#bg)\"/>
-  <line x1=\"228\" y1=\"158\" x2=\"328\" y2=\"158\" stroke=\"#e77d3e\" stroke-width=\"2\" stroke-opacity=\"0.25\" stroke-dasharray=\"8,5\"/>
-  <polygon points=\"328,151 343,158 328,165\" fill=\"#e77d3e\" fill-opacity=\"0.25\"/>
-</svg>'''
-with open('/tmp/dmg-bg.svg', 'w') as f: f.write(svg)
+import struct, zlib, os
+
+W, H = 540, 380
+
+def make_row(y):
+    # Light grey background (Finder uses black text)
+    r, g, b = 238, 238, 238
+    row = bytearray()
+    for x in range(W):
+        # Subtle arrow: dashed line y=168-172, x=210-320
+        if 168 <= y <= 172 and 210 <= x <= 320 and (x % 13 < 8):
+            row.extend([180, 180, 180, 255])
+        # Arrowhead: triangle at x=320-340
+        elif 160 <= y <= 180 and 320 <= x <= 340:
+            mid = 170
+            dist = abs(y - mid)
+            prog = (x - 320) / 20
+            if dist < (1 - prog) * 12:
+                row.extend([180, 180, 180, 255])
+            else:
+                row.extend([r, g, b, 255])
+        else:
+            row.extend([r, g, b, 255])
+    return bytes([0]) + bytes(row)
+
+# Build PNG
+raw = b''.join(make_row(y) for y in range(H))
+def chunk(ctype, data):
+    c = ctype + data
+    return struct.pack('>I', len(data)) + c + struct.pack('>I', zlib.crc32(c) & 0xffffffff)
+
+png = b'\\x89PNG\\r\\n\\x1a\\n'
+png += chunk(b'IHDR', struct.pack('>IIBBBBB', W, H, 8, 6, 0, 0, 0))
+png += chunk(b'IDAT', zlib.compress(raw, 9))
+png += chunk(b'IEND', b'')
+
+os.makedirs('assets', exist_ok=True)
+with open('assets/dmg-background.png', 'wb') as f:
+    f.write(png)
+print('Background generated: assets/dmg-background.png')
 "
-rsvg-convert -w ${WINDOW_W} -h ${WINDOW_H} /tmp/dmg-bg.svg -o "$MOUNT_DIR/.background/bg.png" 2>/dev/null || \
-    qlmanage -t -s ${WINDOW_W} -o /tmp/ /tmp/dmg-bg.svg 2>/dev/null && \
-    mv /tmp/dmg-bg.svg.png "$MOUNT_DIR/.background/bg.png" 2>/dev/null || true
 
-# Hide dotfiles
-SetFile -a V "$MOUNT_DIR/.background" 2>/dev/null || true
-# Remove .fseventsd
-rm -rf "$MOUNT_DIR/.fseventsd" 2>/dev/null || true
-
-# Apply Finder layout via AppleScript
-osascript <<APPLESCRIPT
-tell application "Finder"
-    tell disk "$VOL_NAME"
-        open
-        set current view of container window to icon view
-        set toolbar visible of container window to false
-        set statusbar visible of container window to false
-        set the bounds of container window to {200, 200, $((200 + WINDOW_W)), $((200 + WINDOW_H))}
-        set theViewOptions to the icon view options of container window
-        set arrangement of theViewOptions to not arranged
-        set icon size of theViewOptions to $ICON_SIZE
-        set text size of theViewOptions to 13
-        set label position of theViewOptions to bottom
-        try
-            set background picture of theViewOptions to file ".background:bg.png"
-        end try
-        set position of item "${APP_NAME}.app" of container window to {$APP_X, $APP_Y}
-        set position of item "Applications" of container window to {$APPS_X, $APPS_Y}
-        close
-        open
-        update without registering applications
-        delay 2
-        close
-    end tell
-end tell
-APPLESCRIPT
-
-# Set volume icon
-cp "${BUILD_DIR}/${APP_NAME}.app/Contents/Resources/AppIcon.icns" "${MOUNT_DIR}/.VolumeIcon.icns"
-SetFile -a C "${MOUNT_DIR}" 2>/dev/null || true
-
-# Cleanup hidden files that Finder creates
-rm -rf "$MOUNT_DIR/.fseventsd" 2>/dev/null || true
-rm -rf "$MOUNT_DIR/.Trashes" 2>/dev/null || true
-
-sync
-sleep 1
-hdiutil detach "$MOUNT_DIR"
-
-# Convert to compressed read-only
-hdiutil convert "$DMG_TEMP" -format UDZO -imagekey zlib-level=9 -o "$DMG_FINAL"
-rm -f "$DMG_TEMP"
-rm -rf "$STAGING"
+# Create DMG with create-dmg
+create-dmg \
+    --volname "$APP_NAME" \
+    --volicon /tmp/dmg-vol.icns \
+    --background "assets/dmg-background.png" \
+    --window-pos 200 120 \
+    --window-size 540 380 \
+    --icon-size 128 \
+    --icon "$APP_NAME.app" 150 170 \
+    --hide-extension "$APP_NAME.app" \
+    --app-drop-link 390 170 \
+    --text-size 14 \
+    --no-internet-enable \
+    "$DMG_FINAL" \
+    "${BUILD_DIR}/${APP_NAME}.app"
 
 echo "Styled DMG created: $DMG_FINAL"
