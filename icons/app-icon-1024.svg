@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Squircle background -->
+  <rect x="0" y="0" width="1024" height="1024" rx="224" ry="224" fill="#2D3748"/>
+
+  <!-- Eye outer shape -->
+  <path d="M512 320
+    C 380 320 272 400 220 512
+    C 272 624 380 704 512 704
+    C 644 704 752 624 804 512
+    C 752 400 644 320 512 320 Z"
+    fill="none" stroke="white" stroke-width="48" stroke-linejoin="round"/>
+
+  <!-- Iris outer circle -->
+  <circle cx="512" cy="512" r="120" fill="none" stroke="white" stroke-width="44"/>
+
+  <!-- Pupil -->
+  <circle cx="512" cy="512" r="48" fill="white"/>
+
+  <!-- Catch light -->
+  <circle cx="536" cy="488" r="16" fill="#2D3748"/>
+</svg>

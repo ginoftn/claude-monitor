@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">
+  <!-- Squint eye: half-closed, centered pupil -->
+  <!-- Matches scan-1/scan-2 scale: eye spans ~4 to ~40 horizontally, centered at y=22 -->
+
+  <!-- Upper eyelid - lowered (squinting) -->
+  <path d="M 4 22 Q 14 14, 22 14 Q 30 14, 40 22" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Lower eyelid - raised (squinting) -->
+  <path d="M 4 22 Q 14 28, 22 28 Q 30 28, 40 22" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Pupil - centered -->
+  <circle cx="22" cy="22" r="4" fill="black"/>
+</svg>

@@ -97,7 +97,7 @@ struct MonitorView: View {
                     .foregroundStyle(.quaternary)
                 Spacer()
                 SettingsLink {
-                    Image(systemName: "gear")
+                    Image(systemName: "gearshape")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }

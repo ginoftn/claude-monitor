@@ -5,6 +5,7 @@ import Observation
 class ProcessScanner {
     var processes: [ClaudeProcess] = []
     var isScanning = false
+    var isMidScan = false
 
     @ObservationIgnored private var timer: Timer?
     @ObservationIgnored private var scanInterval: TimeInterval = 10
@@ -57,6 +58,8 @@ class ProcessScanner {
 
     @MainActor
     func scan() async {
+        isMidScan = true
+        defer { isMidScan = false }
         let psOutput = await shell("ps -eo pid,ppid,tty,%cpu,rss,command | grep '[c]laude' | grep -v 'Claude.app' | grep -v grep")
         let uptimes = await fetchUptimes()
         var found: [ClaudeProcess] = []
